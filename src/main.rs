@@ -1,5 +1,6 @@
 use binrw::io::Cursor;
 use binrw::BinWriterExt;
+use pulse::def::BufferAttr;
 use std::io::{Read, Write};
 use std::panic;
 
@@ -64,6 +65,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     assert!(spec.is_valid());
 
+    let attr = BufferAttr {
+        // maximum buf size lol
+        maxlength: 0xFFFFFFFF,
+        // playback only
+        tlength: 0xFFFFFFFF,
+        prebuf: 0xFFFFFFFF,
+        minreq: 0xFFFFFFFF,
+        // fix 2sec latency default (wtf pulseaudio)
+        fragsize: 1024,
+    };
+
     let s = match Simple::new(
         None,
         "hellish_screams",
@@ -72,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "record",
         &spec,
         None,
-        None,
+        Some(&attr),
     ) {
         Ok(s) => s,
         Err(e) => {
